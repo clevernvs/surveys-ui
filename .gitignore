@@ -20,7 +20,6 @@ Thumbs.db
 
 # arquivos de ambiente
 .env
-.env.*
 
 # relatórios de cobertura de testes
 coverage/
