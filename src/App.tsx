@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Typography, Button, Box } from '@mui/material';
 import ProjectsTable from './ProjectsTable';
+import CreateProject from './CreateProject';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState<'list' | 'create'>('list');
+
   const handleCreateProject = () => {
-    // Por enquanto, apenas um console.log
-    // Aqui você pode implementar a navegação para a página de criar projeto
-    console.log('Navegar para página de criar projeto');
+    setCurrentPage('create');
   };
+
+  const handleBackToList = () => {
+    setCurrentPage('list');
+  };
+
+  if (currentPage === 'create') {
+    return <CreateProject onBack={handleBackToList} />;
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
