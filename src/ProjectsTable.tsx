@@ -8,7 +8,9 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    TextField,
+    Box
 } from '@mui/material';
 
 interface Project {
@@ -24,8 +26,29 @@ interface Project {
 
 const ProjectsTable: React.FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Função para filtrar projetos
+    const filterProjects = (projects: Project[], search: string) => {
+        if (!search.trim()) return projects;
+
+        const searchLower = search.toLowerCase();
+        return projects.filter(project =>
+            project.title.toLowerCase().includes(searchLower) ||
+            project.client?.name.toLowerCase().includes(searchLower) ||
+            project.status.toLowerCase().includes(searchLower) ||
+            project.language?.code.toLowerCase().includes(searchLower) ||
+            project.project_type.toLowerCase().includes(searchLower)
+        );
+    };
+
+    // Atualizar projetos filtrados quando projetos ou termo de pesquisa mudar
+    useEffect(() => {
+        setFilteredProjects(filterProjects(projects, searchTerm));
+    }, [projects, searchTerm]);
 
     useEffect(() => {
         fetch('/api/v2/projects')
@@ -52,6 +75,17 @@ const ProjectsTable: React.FC = () => {
 
     return (
         <Paper elevation={2}>
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                <TextField
+                    fullWidth
+                    label="Pesquisar projetos..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    variant="outlined"
+                    size="small"
+                    placeholder="Digite para pesquisar por título, cliente, status, idioma ou tipo..."
+                />
+            </Box>
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -67,7 +101,7 @@ const ProjectsTable: React.FC = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {projects.map((project) => (
+                        {filteredProjects.map((project) => (
                             <TableRow key={project.id}>
                                 <TableCell>{project.id}</TableCell>
                                 <TableCell>{project.title}</TableCell>
@@ -82,6 +116,13 @@ const ProjectsTable: React.FC = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            {filteredProjects.length === 0 && searchTerm && (
+                <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography color="text.secondary">
+                        Nenhum projeto encontrado para "{searchTerm}"
+                    </Typography>
+                </Box>
+            )}
         </Paper>
     );
 };
