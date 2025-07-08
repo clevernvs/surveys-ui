@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, CircularProgress, Paper } from '@mui/material';
+import {
+  Container,
+  Typography,
+  CircularProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
+} from '@mui/material';
 
 interface Project {
   id: number;
   title: string;
-  description: string;
   status: string;
+  created_at: string;
   client: { name: string };
-  // Adicione outros campos relevantes se desejar
+  language: { value: string };
+  project_type: string;
+  sample_size: number;
 }
 
 function App() {
@@ -31,8 +44,12 @@ function App() {
       });
   }, []);
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Lista de Projetos
       </Typography>
@@ -40,28 +57,36 @@ function App() {
       {error && <Typography color="error">{error}</Typography>}
       {!loading && !error && (
         <Paper elevation={2}>
-          <List>
-            {projects.map((project) => (
-              <ListItem key={project.id} divider>
-                <ListItemText
-                  primary={project.title}
-                  secondary={
-                    <>
-                      <Typography component="span" variant="body2" color="text.primary">
-                        Cliente: {project.client?.name || 'N/A'}
-                      </Typography>
-                      <br />
-                      {project.description}
-                      <br />
-                      <Typography component="span" variant="caption" color="text.secondary">
-                        Status: {project.status}
-                      </Typography>
-                    </>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>ID</strong></TableCell>
+                  <TableCell><strong>Nome</strong></TableCell>
+                  <TableCell><strong>Cliente</strong></TableCell>
+                  <TableCell><strong>Status</strong></TableCell>
+                  <TableCell><strong>Idioma</strong></TableCell>
+                  <TableCell><strong>Tipo de Projeto</strong></TableCell>
+                  <TableCell><strong>Tamanho da amostra</strong></TableCell>
+                  <TableCell><strong>Data de Criação</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell>{project.id}</TableCell>
+                    <TableCell>{project.title}</TableCell>
+                    <TableCell>{project.client?.name || 'N/A'}</TableCell>
+                    <TableCell>{project.status}</TableCell>
+                    <TableCell>{project.language?.value || 'N/A'}</TableCell>
+                    <TableCell>{project.project_type || 'N/A'}</TableCell>
+                    <TableCell>{project.sample_size || 'N/A'}</TableCell>
+                    <TableCell>{formatDate(project.created_at)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
       )}
     </Container>
