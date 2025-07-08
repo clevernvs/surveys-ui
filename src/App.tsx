@@ -16,7 +16,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/projects')
+    fetch('/api/v2/projects')
       .then((res) => {
         if (!res.ok) throw new Error('Erro ao buscar projetos');
         return res.json();

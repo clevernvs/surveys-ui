@@ -13,7 +13,7 @@ const ProjectsList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch('/api/v2/projects')
+        fetch(`${process.env.REACT_APP_API_URL}/api/v2/projects`)
             .then((response) => {
                 if (!response.ok) throw new Error('Erro ao buscar projetos');
                 return response.json();
