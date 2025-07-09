@@ -1,33 +1,34 @@
 import React, { useState } from 'react';
 import {
-    Container,
     Typography,
     TextField,
     Button,
     Box,
     Paper
 } from '@mui/material';
+import { CreateProjectForm as CreateProjectFormType } from '../../types';
+import { MESSAGES } from '../../constants/messages';
+import PageContainer from '../layout/PageContainer';
 
-interface CreateProjectForm {
-    title: string;
-    description: string;
-    sample_size: number;
+interface CreateProjectFormProps {
+    onSubmit: (data: CreateProjectFormType) => Promise<void>;
+    onCancel: () => void;
+    loading?: boolean;
 }
 
-interface CreateProjectProps {
-    onBack?: () => void;
-}
-
-const CreateProject: React.FC<CreateProjectProps> = ({ onBack }) => {
-    const [formData, setFormData] = useState<CreateProjectForm>({
+const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
+    onSubmit,
+    onCancel,
+    loading = false
+}) => {
+    const [formData, setFormData] = useState<CreateProjectFormType>({
         title: '',
         description: '',
         sample_size: 0
     });
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleInputChange = (field: keyof CreateProjectForm) => (
+    const handleInputChange = (field: keyof CreateProjectFormType) => (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const value = field === 'sample_size' ? parseInt(event.target.value) || 0 : event.target.value;
@@ -39,44 +40,17 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onBack }) => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch('/api/v2/projects', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro ao criar projeto');
-            }
-
-            // Projeto criado com sucesso
-            alert('Projeto criado com sucesso!');
-            // Voltar para a lista de projetos
-            if (onBack) {
-                onBack();
-            }
+            await onSubmit(formData);
         } catch (err: any) {
             setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCancel = () => {
-        // Voltar para a lista de projetos
-        if (onBack) {
-            onBack();
         }
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <PageContainer maxWidth="md">
             <Paper elevation={2} sx={{ p: 4 }}>
                 <Typography variant="h4" gutterBottom>
                     Criar Novo Projeto
@@ -125,7 +99,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onBack }) => {
                         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                             <Button
                                 variant="outlined"
-                                onClick={handleCancel}
+                                onClick={onCancel}
                                 disabled={loading}
                             >
                                 Cancelar
@@ -136,14 +110,14 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onBack }) => {
                                 color="primary"
                                 disabled={loading}
                             >
-                                {loading ? 'Salvando...' : 'Salvar'}
+                                {loading ? MESSAGES.UI.SAVING : 'Salvar'}
                             </Button>
                         </Box>
                     </Box>
                 </Box>
             </Paper>
-        </Container>
+        </PageContainer>
     );
 };
 
-export default CreateProject; 
+export default CreateProjectForm; 

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Typography,
-    CircularProgress,
     Paper,
     Table,
     TableBody,
@@ -9,83 +8,38 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Box
 } from '@mui/material';
-
-interface Project {
-    id: number;
-    title: string;
-    status: string;
-    created_at: string;
-    client: { name: string };
-    language: { code: string };
-    project_type: string;
-    sample_size: number;
-}
+import { Project } from '../../types';
+import { useProjects } from '../../hooks/useProjects';
+import { filterProjects } from '../../utils/searchUtils';
+import { formatDate } from '../../utils/dateUtils';
+import { MESSAGES } from '../../constants/messages';
+import LoadingSpinner from '../common/LoadingSpinner';
+import ErrorMessage from '../common/ErrorMessage';
+import SearchField from '../forms/SearchField';
 
 const ProjectsTable: React.FC = () => {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+    const { projects, loading, error, fetchProjects } = useProjects();
     const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Função para filtrar projetos
-    const filterProjects = (projects: Project[], search: string) => {
-        if (!search.trim()) return projects;
-
-        const searchLower = search.toLowerCase();
-        return projects.filter(project =>
-            project.title.toLowerCase().includes(searchLower) ||
-            project.client?.name.toLowerCase().includes(searchLower) ||
-            project.status.toLowerCase().includes(searchLower) ||
-            project.language?.code.toLowerCase().includes(searchLower) ||
-            project.project_type.toLowerCase().includes(searchLower)
-        );
-    };
+    const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
     // Atualizar projetos filtrados quando projetos ou termo de pesquisa mudar
     useEffect(() => {
         setFilteredProjects(filterProjects(projects, searchTerm));
     }, [projects, searchTerm]);
 
-    useEffect(() => {
-        fetch('/api/v2/projects')
-            .then((res) => {
-                if (!res.ok) throw new Error('Erro ao buscar projetos');
-                return res.json();
-            })
-            .then((data) => {
-                setProjects(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                setError(err.message);
-                setLoading(false);
-            });
-    }, []);
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('pt-BR');
-    };
-
-    if (loading) return <CircularProgress />;
-    if (error) return <Typography color="error">{error}</Typography>;
+    if (loading) return <LoadingSpinner />;
+    if (error) return <ErrorMessage message={error} onRetry={fetchProjects} />;
 
     return (
         <Paper elevation={2}>
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-                <TextField
-                    fullWidth
-                    label="Pesquisar projetos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    placeholder="Digite para pesquisar por título, cliente, status, idioma ou tipo..."
-                />
-            </Box>
+            <SearchField
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder={MESSAGES.UI.SEARCH_PLACEHOLDER}
+                label="Pesquisar projetos..."
+            />
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -119,7 +73,7 @@ const ProjectsTable: React.FC = () => {
             {filteredProjects.length === 0 && searchTerm && (
                 <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography color="text.secondary">
-                        Nenhum projeto encontrado para "{searchTerm}"
+                        {MESSAGES.UI.NO_PROJECTS_FOUND} "{searchTerm}"
                     </Typography>
                 </Box>
             )}

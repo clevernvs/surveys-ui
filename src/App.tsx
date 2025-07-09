@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Container, Typography, Button, Box } from '@mui/material';
-import ProjectsTable from './ProjectsTable';
-import CreateProject from './CreateProject';
+import { PageType } from './types';
+import ProjectsListPage from './pages/ProjectsListPage';
+import CreateProjectPage from './pages/CreateProjectPage';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'list' | 'create'>('list');
+  const [currentPage, setCurrentPage] = useState<PageType>('list');
 
   const handleCreateProject = () => {
     setCurrentPage('create');
@@ -15,27 +15,10 @@ function App() {
   };
 
   if (currentPage === 'create') {
-    return <CreateProject onBack={handleBackToList} />;
+    return <CreateProjectPage onBack={handleBackToList} />;
   }
 
-  return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          Lista de Projetos
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreateProject}
-          sx={{ minWidth: 200 }}
-        >
-          Criar Projeto
-        </Button>
-      </Box>
-      <ProjectsTable />
-    </Container>
-  );
+  return <ProjectsListPage onCreateProject={handleCreateProject} />;
 }
 
 export default App;
